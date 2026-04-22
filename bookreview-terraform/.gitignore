@@ -1,0 +1,19 @@
+# Terraform files — never commit these
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+tfplan
+*.tfplan
+
+# Variables with secrets — never commit
+terraform.tfvars
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
