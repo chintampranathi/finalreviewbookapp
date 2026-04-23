@@ -148,7 +148,7 @@ module "vpc_hyderabad" {
   }
 
   env             = var.env
-  region          = "ap-south-2"
+  region          = "ap-south-1"
   vpc_cidr        = "10.1.0.0/16"
   public_subnets  = ["10.1.1.0/24", "10.1.2.0/24"]
   private_subnets = ["10.1.3.0/24", "10.1.4.0/24"]
@@ -189,7 +189,7 @@ module "asg_hyderabad" {
   }
 
   env                 = var.env
-  region              = "ap-south-2"
+  region              = "ap-south-1"
   private_subnet_ids  = module.vpc_hyderabad.private_subnet_ids
   app_sg_id           = module.security_groups_hyderabad.app_sg_id
   target_group_arn    = module.alb_hyderabad.target_group_arn
