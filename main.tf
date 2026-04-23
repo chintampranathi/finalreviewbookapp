@@ -153,7 +153,7 @@ module "vpc_hyderabad" {
   public_subnets  = ["10.1.1.0/24", "10.1.2.0/24"]
   private_subnets = ["10.1.3.0/24", "10.1.4.0/24"]
   db_subnets      = ["10.1.5.0/24", "10.1.6.0/24"]
-  azs             = ["ap-south-2a", "ap-south-2b"]
+  azs = ["ap-south-1a", "ap-south-1b"]
 }
 
 module "security_groups_hyderabad" {
