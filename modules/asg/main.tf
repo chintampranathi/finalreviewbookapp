@@ -1,15 +1,17 @@
 # ============================================
-# Module: Auto Scaling Group
-# Launches EC2 instances running Node.js
-# in private subnets, registers with ALB
+# Module: Auto Scaling Group (FIXED VERSION)
 # ============================================
 
 terraform {
   required_providers {
-    aws = { source = "hashicorp/aws", version = "~> 5.0" }
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
   }
 }
 
+# ================= VARIABLES =================
 variable "env" {}
 variable "region" {}
 variable "private_subnet_ids" {}
@@ -24,7 +26,7 @@ variable "db_name" {}
 variable "db_username" {}
 variable "db_password" {}
 
-# Get latest Amazon Linux 2 AMI
+# ================= AMI =================
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
@@ -35,31 +37,7 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# IAM Role for EC2 — allows CloudWatch access
-#resource "aws_iam_role" "ec2_role" {
-  name = "bookreview-${var.env}-${var.region}-ec2-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "cloudwatch" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-}
-
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "bookreview-${var.env}-${var.region}-ec2-profile"
-  role = aws_iam_role.ec2_role.name
-}
-
-# Launch Template — defines how each EC2 is launched
+# ================= LAUNCH TEMPLATE =================
 resource "aws_launch_template" "app" {
   name_prefix   = "bookreview-${var.env}-${var.region}-"
   image_id      = data.aws_ami.amazon_linux.id
@@ -70,35 +48,23 @@ resource "aws_launch_template" "app" {
     security_groups             = [var.app_sg_id]
   }
 
-  iam_instance_profile {
-    name = aws_iam_instance_profile.ec2_profile.name
-  }
+  # ❌ IAM REMOVED (to avoid conflicts)
 
-  # User data — runs on EC2 startup
-  # Installs Node.js, clones app, starts it
   user_data = base64encode(<<-EOF
     #!/bin/bash
     set -e
 
-    # Update system
     yum update -y
 
-    # Install Node.js 18
     curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
     yum install -y nodejs git
 
-    # Install PM2 — keeps Node.js running
     npm install -g pm2
 
-    # Install CloudWatch agent
-    yum install -y amazon-cloudwatch-agent
-
-    # Clone book review app
     cd /home/ec2-user
     git clone https://github.com/yourusername/bookreview-app.git app
     cd app
 
-    # Set environment variables
     cat > .env << 'ENVFILE'
     NODE_ENV=production
     PORT=3000
@@ -108,19 +74,13 @@ resource "aws_launch_template" "app" {
     DB_PASS=${var.db_password}
     ENVFILE
 
-    # Install dependencies
     npm install --production
 
-    # Start app with PM2
     pm2 start app.js --name bookreview
     pm2 startup
     pm2 save
 
-    # Start CloudWatch agent
-    /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-      -a fetch-config -m ec2 -s
-
-    echo "Book Review App started successfully!"
+    echo "App started"
   EOF
   )
 
@@ -135,7 +95,7 @@ resource "aws_launch_template" "app" {
   }
 }
 
-# Auto Scaling Group — manages EC2 instances
+# ================= ASG =================
 resource "aws_autoscaling_group" "app" {
   name                = "bookreview-${var.env}-${var.region}-asg"
   min_size            = var.min_size
@@ -143,7 +103,8 @@ resource "aws_autoscaling_group" "app" {
   desired_capacity    = var.desired_capacity
   vpc_zone_identifier = var.private_subnet_ids
   target_group_arns   = [var.target_group_arn]
-  health_check_type   = "ELB"
+
+  health_check_type         = "ELB"
   health_check_grace_period = 120
 
   launch_template {
@@ -158,7 +119,7 @@ resource "aws_autoscaling_group" "app" {
   }
 }
 
-# Scale UP policy — add instances when CPU > 70%
+# ================= SCALING =================
 resource "aws_autoscaling_policy" "scale_up" {
   name                   = "bookreview-${var.env}-scale-up"
   autoscaling_group_name = aws_autoscaling_group.app.name
@@ -167,7 +128,6 @@ resource "aws_autoscaling_policy" "scale_up" {
   cooldown               = 300
 }
 
-# Scale DOWN policy — remove instances when CPU < 30%
 resource "aws_autoscaling_policy" "scale_down" {
   name                   = "bookreview-${var.env}-scale-down"
   autoscaling_group_name = aws_autoscaling_group.app.name
@@ -176,6 +136,15 @@ resource "aws_autoscaling_policy" "scale_down" {
   cooldown               = 300
 }
 
-output "asg_name"          { value = aws_autoscaling_group.app.name }
-output "scale_up_arn"      { value = aws_autoscaling_policy.scale_up.arn }
-output "scale_down_arn"    { value = aws_autoscaling_policy.scale_down.arn }
+# ================= OUTPUTS =================
+output "asg_name" {
+  value = aws_autoscaling_group.app.name
+}
+
+output "scale_up_arn" {
+  value = aws_autoscaling_policy.scale_up.arn
+}
+
+output "scale_down_arn" {
+  value = aws_autoscaling_policy.scale_down.arn
+}
