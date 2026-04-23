@@ -33,7 +33,7 @@ provider "aws" {
 # Secondary region — Hyderabad
 provider "aws" {
   alias  = "hyderabad"
-  region = "ap-south-2"
+  region = "ap-south-1"
 }
 
 # ============================================
