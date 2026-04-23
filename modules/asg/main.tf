@@ -36,7 +36,7 @@ data "aws_ami" "amazon_linux" {
 }
 
 # IAM Role for EC2 — allows CloudWatch access
-resource "aws_iam_role" "ec2_role" {
+#resource "aws_iam_role" "ec2_role" {
   name = "bookreview-${var.env}-${var.region}-ec2-role"
 
   assume_role_policy = jsonencode({
