@@ -1,4 +1,4 @@
-# Book Review App — 3-Tier AWS Architecture s
+# Book Review App — 3-Tier AWS Architectures
 
 A production-ready 3-tier architecture deployed across 2 AWS regions using Terraform and GitHub Actions CI/CD.
 
