@@ -129,3 +129,7 @@ jobs:
           echo "Mumbai ALB: $(terraform output -raw alb_dns_mumbai)"
           echo "Hyderabad ALB: $(terraform output -raw alb_dns_hyderabad)"
         working-directory: ${{ env.TF_WORKING_DIR }}
+
+
+- name: Debug folders
+  run: ls -R
