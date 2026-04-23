@@ -1,5 +1,5 @@
 # ============================================
-# Module: Auto Scaling Group (FIXED VERSION)
+# Modules: Auto Scaling Group (FIXED VERSION)
 # ============================================
 
 terraform {
