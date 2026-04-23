@@ -186,6 +186,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           metrics = [["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", var.asg_name]]
           period = 60
           stat   = "Average"
+          region = var.region
         }
       },
       {
@@ -195,6 +196,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           metrics = [["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix]]
           period = 60
           stat   = "Average"
+          region = var.region
         }
       },
       {
@@ -204,6 +206,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           metrics = [["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", var.alb_arn_suffix]]
           period = 60
           stat   = "Sum"
+          region = var.region
         }
       },
       {
@@ -213,6 +216,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           metrics = [["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_identifier]]
           period = 60
           stat   = "Average"
+          region = var.region
         }
       }
     ]
