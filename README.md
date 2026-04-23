@@ -126,7 +126,7 @@ Alarms configured for:
 | CI/CD | GitHub Actions |
 | State Management | S3 + DynamoDB |
 
-## Author
+## Authors
 
 Your Name — [LinkedIn](https://linkedin.com/in/yourprofile) | [GitHub](https://github.com/yourusername)
 test
