@@ -130,7 +130,7 @@ jobs:
           path: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve 
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Output ALB DNS
