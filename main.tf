@@ -90,6 +90,7 @@ module "asg_mumbai" {
 
   env                 = var.env
   region              = "ap-south-1"
+  location            = "mumbai" 
   private_subnet_ids  = module.vpc_mumbai.private_subnet_ids
   app_sg_id           = module.security_groups_mumbai.app_sg_id
   target_group_arn    = module.alb_mumbai.target_group_arn
@@ -148,12 +149,12 @@ module "vpc_hyderabad" {
   }
 
   env             = var.env
-  region          = "ap-south-1"
+  region          = "ap-south-2"
   vpc_cidr        = "10.1.0.0/16"
   public_subnets  = ["10.1.1.0/24", "10.1.2.0/24"]
   private_subnets = ["10.1.3.0/24", "10.1.4.0/24"]
   db_subnets      = ["10.1.5.0/24", "10.1.6.0/24"]
-  azs = ["ap-south-1a", "ap-south-1b"]
+  azs = ["ap-south-2a", "ap-south-2b"]
 }
 
 module "security_groups_hyderabad" {
@@ -175,7 +176,8 @@ module "alb_hyderabad" {
   }
 
   env               = var.env
-  region            = "hyderabad"
+  region            = "ap-south-2" 
+  location          = "hyderabad"
   vpc_id            = module.vpc_hyderabad.vpc_id
   public_subnet_ids = module.vpc_hyderabad.public_subnet_ids
   alb_sg_id         = module.security_groups_hyderabad.alb_sg_id
