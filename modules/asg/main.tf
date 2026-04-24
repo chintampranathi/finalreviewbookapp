@@ -12,6 +12,7 @@ terraform {
 }
 
 # ================= VARIABLES =================
+variable "location" {}
 variable "env" {}
 variable "region" {}
 variable "private_subnet_ids" {}
@@ -97,7 +98,7 @@ resource "aws_launch_template" "app" {
 
 # ================= ASG =================
 resource "aws_autoscaling_group" "app" {
-  name                = "bookreview-${var.env}-${var.region}-asg"
+  name                = "bookreview-${var.env}-${var.region}-${var.location}-asg"
   min_size            = var.min_size
   max_size            = var.max_size
   desired_capacity    = var.desired_capacity
