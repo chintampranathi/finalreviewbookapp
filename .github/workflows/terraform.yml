@@ -34,6 +34,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
 
@@ -70,6 +71,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
 
@@ -82,15 +84,8 @@ jobs:
           terraform plan \
             -var="db_username=${{ secrets.DB_USERNAME }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
-            -var="alert_email=${{ secrets.ALERT_EMAIL }}" \
-            -out=tfplan
+            -var="alert_email=${{ secrets.ALERT_EMAIL }}"
         working-directory: ${{ env.TF_WORKING_DIR }}
-
-      - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan
-          path: ${{ env.TF_WORKING_DIR }}/tfplan
 
   apply:
     name: Terraform Apply
@@ -113,6 +108,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
 
@@ -123,14 +119,12 @@ jobs:
         run: terraform init
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      - name: Download plan artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan
-          path: ${{ env.TF_WORKING_DIR }}
-
       - name: Terraform Apply
-        run: terraform apply -auto-approve 
+        run: |
+          terraform apply -auto-approve \
+            -var="db_username=${{ secrets.DB_USERNAME }}" \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            -var="alert_email=${{ secrets.ALERT_EMAIL }}"
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Output ALB DNS
@@ -138,4 +132,3 @@ jobs:
           echo "Mumbai ALB: $(terraform output -raw alb_dns_mumbai)"
           echo "Hyderabad ALB: $(terraform output -raw alb_dns_hyderabad)"
         working-directory: ${{ env.TF_WORKING_DIR }}
-
