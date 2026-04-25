@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+
 concurrency:
   group: terraform
   cancel-in-progress: false
@@ -84,10 +85,18 @@ jobs:
 
       - name: Terraform Plan
         run: |
-          terraform plan \
+          terraform plan -detailed-exitcode \
             -var="db_username=${{ secrets.DB_USERNAME }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="alert_email=${{ secrets.ALERT_EMAIL }}"
+          exit_code=$?
+          if [ $exit_code -eq 1 ]; then
+            echo "Terraform plan failed"
+            exit 1
+          else
+            echo "Terraform plan successful (changes or no changes)"
+            exit 0
+          fi
         working-directory: ${{ env.TF_WORKING_DIR }}
 
   apply:
@@ -133,8 +142,4 @@ jobs:
       - name: Output ALB DNS
         run: |
           echo "Mumbai ALB: $(terraform output -raw alb_dns_mumbai)"
-          echo "Hyderabad ALB: $(terraform output -raw alb_dns_hyderabad)"
         working-directory: ${{ env.TF_WORKING_DIR }}
-
-
-        #ok
