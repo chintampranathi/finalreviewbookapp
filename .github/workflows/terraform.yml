@@ -39,21 +39,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Verify AWS Credentials
+        run: aws sts get-caller-identity
+
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
-        working-directory: ${{ env.TF_WORKING_DIR }}
         continue-on-error: true
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ${{ env.TF_WORKING_DIR }}
+
 
   plan:
     name: Terraform Plan
@@ -76,28 +77,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Verify AWS Credentials
+        run: aws sts get-caller-identity
+
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Plan
         run: |
-          terraform plan -detailed-exitcode \
+          terraform plan \
             -var="db_username=${{ secrets.DB_USERNAME }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="alert_email=${{ secrets.ALERT_EMAIL }}"
-          exit_code=$?
-          if [ $exit_code -eq 1 ]; then
-            echo "Terraform plan failed"
-            exit 1
-          else
-            echo "Terraform plan successful (changes or no changes)"
-            exit 0
-          fi
-        working-directory: ${{ env.TF_WORKING_DIR }}
+
 
   apply:
     name: Terraform Apply
@@ -114,6 +109,7 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
+      # ✅ FIXED BLOCK (this was your problem)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -121,15 +117,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Verify AWS Credentials
+        run: aws sts get-caller-identity
+
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
 
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
-
       - name: Terraform Init
         run: terraform init
-        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Apply
         run: |
@@ -137,15 +132,7 @@ jobs:
             -var="db_username=${{ secrets.DB_USERNAME }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="alert_email=${{ secrets.ALERT_EMAIL }}"
-        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Output ALB DNS
         run: |
           echo "Mumbai ALB: $(terraform output -raw alb_dns_mumbai)"
-        working-directory: ${{ env.TF_WORKING_DIR }}
-
-
-
-
-
-        #h
