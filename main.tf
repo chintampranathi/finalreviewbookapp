@@ -40,7 +40,6 @@ provider "aws" {
 
 module "vpc_mumbai" {
   source = "./modules/vpc"
-
   providers = { aws = aws.mumbai }
 
   env             = var.env
@@ -54,7 +53,6 @@ module "vpc_mumbai" {
 
 module "security_groups_mumbai" {
   source = "./modules/security-groups"
-
   providers = { aws = aws.mumbai }
 
   env    = var.env
@@ -63,7 +61,6 @@ module "security_groups_mumbai" {
 
 module "alb_mumbai" {
   source = "./modules/alb"
-
   providers = { aws = aws.mumbai }
 
   env               = var.env
@@ -75,7 +72,6 @@ module "alb_mumbai" {
 
 module "rds_mumbai" {
   source = "./modules/rds"
-
   providers = { aws = aws.mumbai }
 
   env           = var.env
@@ -90,18 +86,18 @@ module "rds_mumbai" {
 
 module "asg_mumbai" {
   source = "./modules/asg"
-
   providers = { aws = aws.mumbai }
 
-  env                = var.env
-  region             = "mumbai"
-  private_subnet_ids = module.vpc_mumbai.private_subnet_ids
-  app_sg_id          = module.security_groups_mumbai.app_sg_id
-  target_group_arn   = module.alb_mumbai.target_group_arn
-  instance_type      = var.instance_type
-  min_size           = var.asg_min_size
-  max_size           = var.asg_max_size
-  desired_capacity   = var.asg_desired_capacity
+  env                 = var.env
+  region              = "mumbai"
+  location            = "mumbai"   # ✅ REQUIRED
+  private_subnet_ids  = module.vpc_mumbai.private_subnet_ids
+  app_sg_id           = module.security_groups_mumbai.app_sg_id
+  target_group_arn    = module.alb_mumbai.target_group_arn
+  instance_type       = var.instance_type
+  min_size            = var.asg_min_size
+  max_size            = var.asg_max_size
+  desired_capacity    = var.asg_desired_capacity
 
   db_endpoint = module.rds_mumbai.db_endpoint
   db_name     = var.db_name
@@ -111,7 +107,6 @@ module "asg_mumbai" {
 
 module "cloudwatch_mumbai" {
   source = "./modules/cloudwatch"
-
   providers = { aws = aws.mumbai }
 
   env            = var.env
@@ -129,7 +124,6 @@ module "cloudwatch_mumbai" {
 
 module "vpc_hyderabad" {
   source = "./modules/vpc"
-
   providers = { aws = aws.hyderabad }
 
   env             = var.env
@@ -143,7 +137,6 @@ module "vpc_hyderabad" {
 
 module "security_groups_hyderabad" {
   source = "./modules/security-groups"
-
   providers = { aws = aws.hyderabad }
 
   env    = var.env
@@ -152,7 +145,6 @@ module "security_groups_hyderabad" {
 
 module "alb_hyderabad" {
   source = "./modules/alb"
-
   providers = { aws = aws.hyderabad }
 
   env               = var.env
@@ -164,7 +156,6 @@ module "alb_hyderabad" {
 
 module "rds_hyderabad" {
   source = "./modules/rds"
-
   providers = { aws = aws.hyderabad }
 
   env            = var.env
@@ -180,18 +171,18 @@ module "rds_hyderabad" {
 
 module "asg_hyderabad" {
   source = "./modules/asg"
-
   providers = { aws = aws.hyderabad }
 
-  env                = var.env
-  region             = "hyderabad"
-  private_subnet_ids = module.vpc_hyderabad.private_subnet_ids
-  app_sg_id          = module.security_groups_hyderabad.app_sg_id
-  target_group_arn   = module.alb_hyderabad.target_group_arn
-  instance_type      = var.instance_type
-  min_size           = var.asg_min_size
-  max_size           = var.asg_max_size
-  desired_capacity   = var.asg_desired_capacity
+  env                 = var.env
+  region              = "hyderabad"
+  location            = "hyderabad"   # ✅ REQUIRED
+  private_subnet_ids  = module.vpc_hyderabad.private_subnet_ids
+  app_sg_id           = module.security_groups_hyderabad.app_sg_id
+  target_group_arn    = module.alb_hyderabad.target_group_arn
+  instance_type       = var.instance_type
+  min_size            = var.asg_min_size
+  max_size            = var.asg_max_size
+  desired_capacity    = var.asg_desired_capacity
 
   db_endpoint = module.rds_hyderabad.db_endpoint
   db_name     = var.db_name
@@ -201,7 +192,6 @@ module "asg_hyderabad" {
 
 module "cloudwatch_hyderabad" {
   source = "./modules/cloudwatch"
-
   providers = { aws = aws.hyderabad }
 
   env            = var.env
