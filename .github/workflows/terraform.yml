@@ -38,7 +38,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # ✅ DEBUG STEP (IMPORTANT)
       - name: DEBUG AWS
         run: |
           echo "Access Key Length:"
@@ -77,7 +76,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # ✅ DEBUG STEP
       - name: DEBUG AWS
         run: |
           echo "Access Key Length:"
@@ -91,12 +89,24 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan
+      # 🔥 IMPORTANT FIX (DESTROY HYDERABAD RESOURCES)
+      - name: Destroy Hyderabad resources
         run: |
-          terraform plan \
-            -var="db_username=${{ secrets.DB_USERNAME }}" \
-            -var="db_password=${{ secrets.DB_PASSWORD }}" \
-            -var="alert_email=${{ secrets.ALERT_EMAIL }}"
+          terraform destroy -auto-approve \
+            -target=module.vpc_hyderabad \
+            -target=module.security_groups_hyderabad \
+            -target=module.alb_hyderabad \
+            -target=module.rds_hyderabad \
+            -target=module.asg_hyderabad \
+            -target=module.cloudwatch_hyderabad
+
+      # ⛔ TEMPORARILY DISABLED
+      # - name: Terraform Plan
+      #   run: |
+      #     terraform plan \
+      #       -var="db_username=${{ secrets.DB_USERNAME }}" \
+      #       -var="db_password=${{ secrets.DB_PASSWORD }}" \
+      #       -var="alert_email=${{ secrets.ALERT_EMAIL }}"
 
 
   apply:
@@ -121,7 +131,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # ✅ DEBUG STEP
       - name: DEBUG AWS
         run: |
           echo "Access Key Length:"
