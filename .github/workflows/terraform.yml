@@ -81,23 +81,13 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # ✅ FIXED BLOCK
+      # ✅ FIXED (simple and stable)
       - name: Terraform Plan
         run: |
-          terraform plan -detailed-exitcode \
+          terraform plan \
             -var="db_username=${{ secrets.DB_USERNAME }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="alert_email=${{ secrets.ALERT_EMAIL }}"
-
-          exit_code=$?
-
-          if [ $exit_code -eq 1 ]; then
-            echo "Terraform plan failed"
-            exit 1
-          else
-            echo "Terraform plan successful"
-            exit 0
-          fi
 
 
   apply:
