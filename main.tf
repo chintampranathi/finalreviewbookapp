@@ -1,6 +1,5 @@
 # ============================================
 # Book Review App — 3-Tier Architecture
-# Multi-Region: Mumbai + Hyderabad
 # ============================================
 
 terraform {
@@ -29,10 +28,11 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-provider "aws" {
-  alias  = "hyderabad"
-  region = "ap-south-2"
-}
+# ❌ DISABLED (causing your error)
+# provider "aws" {
+#   alias  = "hyderabad"
+#   region = "ap-south-2"
+# }
 
 # ============================================
 # MUMBAI (PRIMARY)
@@ -90,7 +90,7 @@ module "asg_mumbai" {
 
   env                 = var.env
   region              = "mumbai"
-  location            = "mumbai"   # ✅ REQUIRED
+  location            = "mumbai"
   private_subnet_ids  = module.vpc_mumbai.private_subnet_ids
   app_sg_id           = module.security_groups_mumbai.app_sg_id
   target_group_arn    = module.alb_mumbai.target_group_arn
@@ -119,86 +119,21 @@ module "cloudwatch_mumbai" {
 }
 
 # ============================================
-# HYDERABAD (SECONDARY)
+# ❌ HYDERABAD DISABLED (FREE TIER FIX)
 # ============================================
 
-module "vpc_hyderabad" {
-  source = "./modules/vpc"
-  providers = { aws = aws.hyderabad }
+# module "vpc_hyderabad" {
+#   source = "./modules/vpc"
+#   providers = { aws = aws.hyderabad }
+#   ...
+# }
 
-  env             = var.env
-  region          = "hyderabad"
-  vpc_cidr        = "10.1.0.0/16"
-  public_subnets  = ["10.1.1.0/24", "10.1.2.0/24"]
-  private_subnets = ["10.1.3.0/24", "10.1.4.0/24"]
-  db_subnets      = ["10.1.5.0/24", "10.1.6.0/24"]
-  azs             = ["ap-south-2a", "ap-south-2b"]
-}
+# module "security_groups_hyderabad" { ... }
 
-module "security_groups_hyderabad" {
-  source = "./modules/security-groups"
-  providers = { aws = aws.hyderabad }
+# module "alb_hyderabad" { ... }
 
-  env    = var.env
-  vpc_id = module.vpc_hyderabad.vpc_id
-}
+# module "rds_hyderabad" { ... }
 
-module "alb_hyderabad" {
-  source = "./modules/alb"
-  providers = { aws = aws.hyderabad }
+# module "asg_hyderabad" { ... }
 
-  env               = var.env
-  region            = "hyderabad"
-  vpc_id            = module.vpc_hyderabad.vpc_id
-  public_subnet_ids = module.vpc_hyderabad.public_subnet_ids
-  alb_sg_id         = module.security_groups_hyderabad.alb_sg_id
-}
-
-module "rds_hyderabad" {
-  source = "./modules/rds"
-  providers = { aws = aws.hyderabad }
-
-  env            = var.env
-  region         = "replica"
-  db_subnet_ids  = module.vpc_hyderabad.db_subnet_ids
-  db_sg_id       = module.security_groups_hyderabad.db_sg_id
-  db_name        = var.db_name
-  db_username    = var.db_username
-  db_password    = var.db_password
-  is_primary     = false
-  primary_db_arn = module.rds_mumbai.db_arn
-}
-
-module "asg_hyderabad" {
-  source = "./modules/asg"
-  providers = { aws = aws.hyderabad }
-
-  env                 = var.env
-  region              = "hyderabad"
-  location            = "hyderabad"   # ✅ REQUIRED
-  private_subnet_ids  = module.vpc_hyderabad.private_subnet_ids
-  app_sg_id           = module.security_groups_hyderabad.app_sg_id
-  target_group_arn    = module.alb_hyderabad.target_group_arn
-  instance_type       = var.instance_type
-  min_size            = var.asg_min_size
-  max_size            = var.asg_max_size
-  desired_capacity    = var.asg_desired_capacity
-
-  db_endpoint = module.rds_hyderabad.db_endpoint
-  db_name     = var.db_name
-  db_username = var.db_username
-  db_password = var.db_password
-}
-
-module "cloudwatch_hyderabad" {
-  source = "./modules/cloudwatch"
-  providers = { aws = aws.hyderabad }
-
-  env            = var.env
-  region         = "hyderabad"
-  asg_name       = module.asg_hyderabad.asg_name
-  alb_arn_suffix = module.alb_hyderabad.alb_arn_suffix
-  tg_arn_suffix  = module.alb_hyderabad.tg_arn_suffix
-  rds_identifier = module.rds_hyderabad.db_identifier
-  alert_email    = var.alert_email
-}
+# module "cloudwatch_hyderabad" { ... }
