@@ -28,11 +28,11 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# ❌ DISABLED (causing your error)
-# provider "aws" {
-#   alias  = "hyderabad"
-#   region = "ap-south-2"
-# }
+
+ provider "aws" {
+   alias  = "hyderabad"
+   region = "ap-south-2"
+ }
 
 # ============================================
 # MUMBAI (PRIMARY)
