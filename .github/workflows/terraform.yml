@@ -38,8 +38,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Verify AWS Credentials
-        run: aws sts get-caller-identity
+      # ✅ DEBUG STEP (IMPORTANT)
+      - name: DEBUG AWS
+        run: |
+          echo "Access Key Length:"
+          echo ${#AWS_ACCESS_KEY_ID}
+          echo "Trying AWS identity..."
+          aws sts get-caller-identity
 
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
@@ -72,8 +77,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Verify AWS Credentials
-        run: aws sts get-caller-identity
+      # ✅ DEBUG STEP
+      - name: DEBUG AWS
+        run: |
+          echo "Access Key Length:"
+          echo ${#AWS_ACCESS_KEY_ID}
+          echo "Trying AWS identity..."
+          aws sts get-caller-identity
 
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
@@ -81,7 +91,6 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # ✅ FIXED (simple and stable)
       - name: Terraform Plan
         run: |
           terraform plan \
@@ -112,8 +121,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Verify AWS Credentials
-        run: aws sts get-caller-identity
+      # ✅ DEBUG STEP
+      - name: DEBUG AWS
+        run: |
+          echo "Access Key Length:"
+          echo ${#AWS_ACCESS_KEY_ID}
+          echo "Trying AWS identity..."
+          aws sts get-caller-identity
 
       - name: Clean Terraform cache
         run: rm -rf .terraform .terraform.lock.hcl
