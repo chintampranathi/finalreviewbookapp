@@ -4,13 +4,10 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 concurrency:
   group: terraform
-  cancel-in-progress: true   # 🔥 IMPORTANT FIX (prevents lock issues)
+  cancel-in-progress: true
 
 env:
   AWS_REGION: ap-south-1
@@ -18,8 +15,8 @@ env:
 
 jobs:
 
-  validate:
-    name: Validate Terraform
+  destroy:
+    name: Destroy Infrastructure
     runs-on: ubuntu-latest
 
     steps:
@@ -38,43 +35,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: DEBUG AWS
-        run: |
-          echo "Trying AWS identity..."
-          aws sts get-caller-identity
-
-      - name: Clean Terraform cache
-        run: rm -rf .terraform .terraform.lock.hcl
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Validate
-        run: terraform validate
-
-
-  plan:
-    name: Cleanup + Plan
-    runs-on: ubuntu-latest
-    needs: validate
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: DEBUG AWS
+      - name: Verify AWS Identity
         run: aws sts get-caller-identity
 
       - name: Clean Terraform cache
@@ -83,67 +44,11 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # 🔥 FIXED DESTROY STEP
-      - name: Destroy Hyderabad resources
+      # 🔥 FULL DESTROY (IMPORTANT)
+      - name: Destroy ALL Infra
         run: |
-          terraform destroy -auto-approve -lock-timeout=300s \
-            -target=module.vpc_hyderabad \
-            -target=module.security_groups_hyderabad \
-            -target=module.alb_hyderabad \
-            -target=module.rds_hyderabad \
-            -target=module.asg_hyderabad \
-            -target=module.cloudwatch_hyderabad \
+          terraform destroy -auto-approve \
+            -lock-timeout=300s \
             -var="db_username=${{ secrets.DB_USERNAME }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="alert_email=${{ secrets.ALERT_EMAIL }}"
-
-      # ✅ PLAN (re-enabled after cleanup)
-      - name: Terraform Plan
-        run: |
-          terraform plan \
-            -var="db_username=${{ secrets.DB_USERNAME }}" \
-            -var="db_password=${{ secrets.DB_PASSWORD }}" \
-            -var="alert_email=${{ secrets.ALERT_EMAIL }}"
-
-
-  apply:
-    name: Terraform Apply
-    runs-on: ubuntu-latest
-    needs: plan
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: DEBUG AWS
-        run: aws sts get-caller-identity
-
-      - name: Clean Terraform cache
-        run: rm -rf .terraform .terraform.lock.hcl
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Apply
-        run: |
-          terraform apply -auto-approve \
-            -var="db_username=${{ secrets.DB_USERNAME }}" \
-            -var="db_password=${{ secrets.DB_PASSWORD }}" \
-            -var="alert_email=${{ secrets.ALERT_EMAIL }}"
-
-      - name: Output ALB DNS
-        run: |
-          echo "Mumbai ALB: $(terraform output -raw alb_dns_mumbai)"
